@@ -1,0 +1,40 @@
+-- src_vantande.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+
+CREATE OR REPLACE VIEW src_vantande AS
+SELECT
+  -- ⚠️ ÄNDRA KOLUMNNAMNEN (samma princip som src_genomford)
+  kontakt_id          AS vardkontakt_id,
+  pat_id              AS patient_id,
+  kon_kod             AS kon,
+  fodelsar            AS fodelsear,
+  '51'                AS regionkod,         -- ⚠️ ändra per region
+  hsa_region          AS hsaid_region,
+  hsa_vardgivare      AS hsaid_vardgivare,
+  hsa_vardenhet       AS hsaid_vardenhet,
+  hsa_enhet           AS hsaid_enhet,
+  sjukhus_kod         AS sjukhuskod,
+  sjukhus_namn        AS sjukhusnamn,
+  mvo                 AS mvo_kod,
+  '51101'             AS aktivitetskod,
+  kva_aktivitet       AS aktivitet_kva,
+  icd_aktivitet       AS aktivitet_icd,
+  kva                 AS kva_kod,
+  yrke                AS yrkeskategori,
+  bokning             AS bokningssatt,
+  kontakttyp          AS vardkontakttyp,
+  vg_flagga           AS vardgaranti,
+  avvikelse           AS avvikelsekod,
+  remtyp              AS remittenttyp,
+  rem_hsaid           AS remittent_hsaid,
+  remiss_id           AS remiss_id,
+  rem_datum           AS remiss_datum,
+  rem_ankomst         AS ankomst_datum,
+  beslut_datum        AS beslut_datum,
+  NULL                AS start_datum,       -- Alltid NULL för väntande
+  med_maldatum        AS medicinskt_maldatum,
+  kommun_kod          AS lkf,
+  hsa_listning        AS hsaid_listning,
+  period              AS matperiod
+-- ⚠️ ÄNDRA TABELLNAMNET NEDAN
+FROM ds_datalager.v_vantande_specialiserad;

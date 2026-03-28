@@ -1,0 +1,99 @@
+-- calc_vantetid_genomford.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- Ändringar i v1.0.1 (baserat på VGR feedback):
+--   1. NYTT: is_hemregion — flagga baserad på ref_filter_region.
+--      1 = patienten folkbokförd i regionen.
+--      0 = utomläning (opererad här men bor i annan region).
+--      Filtrera INTE på den — den finns för analys och
+--      för att kunna jämföra med/utan utomläningar.
+--
+--   2. FIXAT: Tydligare kommentarer på patientresa-beräkningarna
+--      så att getdaysbetween-argument inte råkar bytas.
+--
+-- OBS: Beräkningen av uppfyller_vg, vantetid_dagar etc.
+-- är OFÖRÄNDRAD från v1.0.0.
+--
+-- ⚠️ AVVIKELSEKODER: Denna vy förväntar sig att
+--   avvikelsekod = '1' betyder PvV. Om er basvy
+--   producerar 'PvV' istället, ändra <> '1' till <> 'PvV'.
+--
+-- ⚠️ VÅRDGARANTI: Denna vy förväntar sig att
+--   vardgaranti = '1' betyder JA. Om er basvy
+--   producerar 'JA' istället, ändra = '1' till = 'JA'.
+--
+-- OBS getdaysbetween: VGR:s Denodo använder
+--   getdaysbetween(TIDIGARE_DATUM, SENARE_DATUM) = positivt tal
+-- Verifiera att detta stämmer i er Denodo-version innan körning.
+
+CREATE OR REPLACE VIEW calc_vantetid_genomford AS
+SELECT
+  src.*,
+
+  -- Väntetid: beslut → operation (dagar)
+  -- getdaysbetween(TIDIGARE, SENARE) = positivt tal
+  GETDAYSBETWEEN(src.beslut_datum, src.start_datum)
+    AS vantetid_dagar,
+
+  -- Väntetidsintervall (samma intervall som vantetider.se)
+  CASE
+    WHEN GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 30  THEN '0-30'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 60  THEN '31-60'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 90  THEN '61-90'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 120 THEN '91-120'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 180 THEN '121-180'
+    ELSE '>180'
+  END AS vantetid_intervall,
+
+  -- Åldersgrupp (beräknad från födelseår vid operationstillfället)
+  CASE
+    WHEN (GETYEAR(src.start_datum) - src.fodelsear) < 50 THEN '<50'
+    WHEN (GETYEAR(src.start_datum) - src.fodelsear) < 65 THEN '50-64'
+    WHEN (GETYEAR(src.start_datum) - src.fodelsear) < 75 THEN '65-74'
+    WHEN (GETYEAR(src.start_datum) - src.fodelsear) < 85 THEN '75-84'
+    ELSE '85+'
+  END AS aldersgrupp,
+
+  -- Vårdgaranti: 1 om uppfylld, 0 annars
+  -- PvV (avvikelsekod '1') exkluderas — korrekt per SKR:s dokumentation.
+  -- MoV (avvikelsekod '2') exkluderas INTE för genomförda — korrekt per SKR:s dokumentation.
+  CASE
+    WHEN src.vardgaranti = '1'                             -- ⚠️ ändra till 'JA' om er data har textformat
+         AND COALESCE(src.avvikelsekod, '') <> '1'         -- ⚠️ ändra till 'PvV' om er data har textformat
+         AND GETDAYSBETWEEN(src.beslut_datum, src.start_datum) <= 90
+    THEN 1 ELSE 0
+  END AS uppfyller_vg,
+
+  -- Total patientresa: remiss → operation (INTE beslut → operation)
+  -- Mäter hela vägen från att remissen skrevs till att operationen skedde.
+  CASE WHEN src.remiss_datum IS NOT NULL
+    THEN GETDAYSBETWEEN(src.remiss_datum, src.start_datum)   -- remiss → operation
+    ELSE NULL
+  END AS total_patientresa_dagar,
+
+  -- Remiss till beslut: remiss → beslut (INTE beslut → operation)
+  -- Mäter tiden från remissen till specialistens op-beslut.
+  CASE WHEN src.remiss_datum IS NOT NULL AND src.beslut_datum IS NOT NULL
+    THEN GETDAYSBETWEEN(src.remiss_datum, src.beslut_datum)  -- remiss → beslut
+    ELSE NULL
+  END AS remiss_till_beslut_dagar,
+
+  -- Utomläningsflagga (NYTT i v1.0.1)
+  -- 1 = patienten folkbokförd i regionen (LKF-prefix matchar ref_filter_region)
+  -- 0 = utomläning (opererad här men bor i annan region)
+  -- Denna kolumn FILTRERAR INTE bort något — alla rader behålls.
+  -- Regionen kan använda WHERE is_hemregion = 1 vid behov.
+  CASE
+    WHEN LEFT(src.lkf, 2) IN (SELECT lanskod FROM ref_filter_region)
+    THEN 1 ELSE 0
+  END AS is_hemregion,
+
+  GETYEAR(src.start_datum)  AS op_ar,
+  GETMONTH(src.start_datum) AS op_manad
+
+FROM src_genomford src
+WHERE src.kva_kod IN (SELECT kva_kod FROM ref_kva_katarakt)
+  AND src.mvo_kod = '511'
+  AND src.beslut_datum IS NOT NULL
+  AND src.start_datum  IS NOT NULL
+  AND GETDAYSBETWEEN(src.beslut_datum, src.start_datum) >= 0;

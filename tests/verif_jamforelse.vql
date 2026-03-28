@@ -1,0 +1,123 @@
+-- verif_jamforelse.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- Ändring i v1.0.1: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Anledning: vantetider.se visar per sjukhus — man kan
+-- inte jämföra utan att ha per-sjukhus-uppdelning.
+-- Tack till VGR som visade att detta behövdes.
+
+CREATE OR REPLACE VIEW verif_jamforelse AS
+-- Andel inom 90 dagar (VG-andel)
+SELECT op_manad AS manad, sjukhusnamn AS sjukhus,
+  'Andel inom 90 dagar' AS kpi,
+  CAST(CAST(COUNT(CASE WHEN vardgaranti='1' AND COALESCE(avvikelsekod,'')<>'1' AND vantetid_dagar<=90 THEN 1 END) AS DOUBLE)
+    / NULLIF(COUNT(CASE WHEN vardgaranti='1' AND COALESCE(avvikelsekod,'')<>'1' THEN 1 END), 0) * 100 AS DECIMAL(5,1)) AS beraknat_varde,
+  '%' AS enhet,
+  COUNT(CASE WHEN vardgaranti='1' AND COALESCE(avvikelsekod,'')<>'1' THEN 1 END) AS namnare,
+  COUNT(CASE WHEN vardgaranti='1' AND COALESCE(avvikelsekod,'')<>'1' AND vantetid_dagar<=90 THEN 1 END) AS taljare,
+  'vantetider.se > Specialiserad vard > Aktuellt vardgarantilage > Valj region + Ogonsjukvard + Operation/atgard' AS var_pa_vantetider_se,
+  'Spindeldiagrammet visar andel i %. Valj ratt period och sjukhus.' AS kommentar
+FROM calc_vantetid_genomford
+GROUP BY op_manad, sjukhusnamn
+
+UNION ALL
+-- Medianväntetid
+SELECT op_manad, sjukhusnamn,
+  'Medianvantetid (alla genomforda)' AS kpi,
+  CAST(MEDIAN(vantetid_dagar) AS DECIMAL(5,1)),
+  'dagar', COUNT(*), NULL,
+  'vantetider.se > Specialiserad vard > Medel- och medianvantetid > Valj region + Ogonsjukvard + Operation/atgard',
+  'Visa median (inte medel).'
+FROM calc_vantetid_genomford
+GROUP BY op_manad, sjukhusnamn
+
+UNION ALL
+-- Medelväntetid
+SELECT op_manad, sjukhusnamn,
+  'Medelvantetid (alla genomforda)',
+  CAST(AVG(CAST(vantetid_dagar AS DOUBLE)) AS DECIMAL(5,1)),
+  'dagar', COUNT(*), NULL,
+  'vantetider.se > Specialiserad vard > Medel- och medianvantetid > Valj region + Ogonsjukvard + Operation/atgard',
+  'Visa medel (inte median).'
+FROM calc_vantetid_genomford
+GROUP BY op_manad, sjukhusnamn
+
+UNION ALL
+-- Antal genomförda
+SELECT op_manad, sjukhusnamn,
+  'Antal genomforda operationer',
+  CAST(COUNT(*) AS DECIMAL(10,0)),
+  'st', NULL, NULL,
+  'vantetider.se > Specialiserad vard > Utokad uppfoljning > Valj region + Ogonsjukvard + Operation/atgard',
+  'Antal visas i tabellen. Valj ratt manad.'
+FROM calc_vantetid_genomford
+GROUP BY op_manad, sjukhusnamn
+
+UNION ALL
+-- Antal väntande
+SELECT matperiod, sjukhusnamn,
+  'Antal vantande',
+  CAST(COUNT(*) AS DECIMAL(10,0)),
+  'st', NULL, NULL,
+  'vantetider.se > Specialiserad vard > Utokad uppfoljning > Valj region + Ogonsjukvard + Fliken Vantande',
+  'Ogonblicksbild sista dag i manaden.'
+FROM calc_vantande
+GROUP BY matperiod, sjukhusnamn
+
+UNION ALL
+-- Väntetidsfördelning (6 intervall)
+SELECT op_manad, sjukhusnamn,
+  '  Intervall 0-30 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='0-30' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL,
+  'vantetider.se > Utokad uppfoljning > Valj region + Ogon + Op > Fordelning',
+  'Stapeldiagrammet visar antal per intervall.'
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  '  Intervall 31-60 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='31-60' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  '  Intervall 61-90 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='61-90' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  '  Intervall 91-120 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='91-120' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  '  Intervall 121-180 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='121-180' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  '  Intervall >180 dagar',
+  CAST(COUNT(CASE WHEN vantetid_intervall='>180' THEN 1 END) AS DECIMAL(10,0)),
+  'st', NULL, NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+
+UNION ALL
+-- Per kön
+SELECT op_manad, sjukhusnamn,
+  'Median man',
+  CAST(MEDIAN(CASE WHEN kon='1' THEN vantetid_dagar END) AS DECIMAL(5,1)),
+  'dagar',
+  COUNT(CASE WHEN kon='1' THEN 1 END), NULL,
+  'vantetider.se > Utokad uppfoljning > Valj region + Ogon + Op > Filtrera pa kon',
+  'Valj Man/Kvinna i dropdown.'
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn
+UNION ALL
+SELECT op_manad, sjukhusnamn,
+  'Median kvinna',
+  CAST(MEDIAN(CASE WHEN kon='2' THEN vantetid_dagar END) AS DECIMAL(5,1)),
+  'dagar',
+  COUNT(CASE WHEN kon='2' THEN 1 END), NULL, '', ''
+FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn;

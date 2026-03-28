@@ -1,0 +1,15 @@
+-- res_vantande_detalj.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+
+CREATE OR REPLACE VIEW res_vantande_detalj AS
+SELECT
+  vardkontakt_id, patient_id, kon, fodelsear,
+  regionkod, sjukhuskod, sjukhusnamn, hsaid_vardenhet,
+  mvo_kod, kva_kod, aktivitetskod,
+  yrkeskategori, vardgaranti, avvikelsekod,
+  remittenttyp, remittent_hsaid,
+  remiss_datum, beslut_datum, medicinskt_maldatum,
+  lkf, hsaid_listning, matperiod,
+  vantetid_dagar, vantetid_intervall,
+  rapportdatum, vantestatus, bryter_vg
+FROM calc_vantande;

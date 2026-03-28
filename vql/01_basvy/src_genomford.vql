@@ -1,0 +1,51 @@
+-- src_genomford.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- Kommentar om kodformat:
+--   vardgaranti: XSD säger 1=JA, 2=NEJ (heltal).
+--     Er källdata kan ha '1'/'2' eller 'JA'/'NEJ'.
+--     Beräkningslagret (calc_vantetid_genomford)
+--     förväntar sig det format ni väljer här.
+--     Se kommentar i calc_vantetid_genomford.
+--
+--   avvikelsekod: XSD säger 1/2/3 (heltal).
+--     Er källdata kan ha '1'/'2'/'3' eller 'PvV'/'MoV'/'SoV'.
+--     Anpassa calc_vantetid_genomford om ni byter format.
+
+CREATE OR REPLACE VIEW src_genomford AS
+SELECT
+  -- ⚠️ ÄNDRA KOLUMNNAMNEN TILL VÄNSTER
+  kontakt_id          AS vardkontakt_id,    -- ⚠️ ändra
+  pat_id              AS patient_id,        -- ⚠️ ändra
+  kon_kod             AS kon,               -- ⚠️ ändra  (XSD: 1=Man 2=Kvinna. Er data kan ha 'M'/'K')
+  fodelsar            AS fodelsear,         -- ⚠️ ändra
+  '51'                AS regionkod,         -- ⚠️ ändra per region
+  hsa_region          AS hsaid_region,      -- ⚠️ ändra
+  hsa_vardgivare      AS hsaid_vardgivare,  -- ⚠️ ändra
+  hsa_vardenhet       AS hsaid_vardenhet,   -- ⚠️ ändra
+  hsa_enhet           AS hsaid_enhet,       -- ⚠️ ändra  (NULL om saknas)
+  sjukhus_kod         AS sjukhuskod,        -- ⚠️ ändra
+  sjukhus_namn        AS sjukhusnamn,       -- ⚠️ ändra
+  mvo                 AS mvo_kod,           -- ⚠️ ändra  ('511' = Ögon)
+  '51101'             AS aktivitetskod,     -- Gråstarr (hårdkodat)
+  kva_aktivitet       AS aktivitet_kva,     -- ⚠️ ändra  (NULL om saknas)
+  icd_aktivitet       AS aktivitet_icd,     -- ⚠️ ändra  (NULL om saknas)
+  kva                 AS kva_kod,           -- ⚠️ ändra  ('CJE20' etc.)
+  yrke                AS yrkeskategori,     -- ⚠️ ändra
+  bokning             AS bokningssatt,      -- ⚠️ ändra
+  kontakttyp          AS vardkontakttyp,    -- ⚠️ ändra
+  vg_flagga           AS vardgaranti,       -- ⚠️ ändra  (XSD: '1'=JA '2'=NEJ)
+  avvikelse           AS avvikelsekod,      -- ⚠️ ändra  (XSD: '1'=PvV '2'=MoV '3'=SoV, NULL=ingen)
+  remtyp              AS remittenttyp,      -- ⚠️ ändra
+  rem_hsaid           AS remittent_hsaid,   -- ⚠️ ändra
+  remiss_id           AS remiss_id,         -- ⚠️ ändra
+  rem_datum           AS remiss_datum,      -- ⚠️ ändra
+  rem_ankomst         AS ankomst_datum,     -- ⚠️ ändra
+  beslut_datum        AS beslut_datum,      -- ⚠️ ändra  (MP1 — väntetidsstart)
+  start_datum         AS start_datum,       -- ⚠️ ändra  (MP2 — väntetidsslut)
+  med_maldatum        AS medicinskt_maldatum, -- ⚠️ ändra (MP3)
+  kommun_kod          AS lkf,               -- ⚠️ ändra  (SCB 4-siffrig: LLKK)
+  hsa_listning        AS hsaid_listning,    -- ⚠️ ändra
+  period              AS matperiod          -- ⚠️ ändra
+-- ⚠️ ÄNDRA TABELLNAMNET NEDAN
+FROM ds_datalager.v_genomford_specialiserad;

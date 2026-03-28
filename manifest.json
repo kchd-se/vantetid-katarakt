@@ -1,7 +1,7 @@
 {
   "name": "vantetid-katarakt",
   "description": "Distributionspaket för väntetidsberäkning — katarakt. Standardiserad beräkningslogik i VQL från Vårddatahubben (KCHD, SKR).",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "release_date": "2026-03-28",
   "maintainer": "KCHD, SKR",
   "vql_target": "Denodo",

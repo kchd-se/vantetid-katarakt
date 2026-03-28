@@ -1,0 +1,61 @@
+-- res_kpi_manad.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- Ändring i v1.0.1: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Anledning: VGR visade att verifiering mot vantetider.se
+-- kräver per-sjukhus-uppdelning. sjukhusnamn är 1:1 med
+-- sjukhuskod — ändrar inte antal grupper.
+--
+-- ⚠️ KÖN: Denna vy använder kon='1' (man) och kon='2' (kvinna).
+-- Om er basvy producerar 'M'/'K', ändra nedan.
+
+CREATE OR REPLACE VIEW res_kpi_manad AS
+SELECT
+  g.op_ar AS ar, g.op_manad AS manad,
+  g.hsaid_vardenhet, g.hsaid_region, g.regionkod,
+  g.sjukhuskod, g.sjukhusnamn,                  -- sjukhusnamn tillagt i v1.0.1
+
+  COUNT(*) AS antal_genomforda,
+
+  MEDIAN(g.vantetid_dagar)                   AS median_vantetid,
+  AVG(CAST(g.vantetid_dagar AS DOUBLE))      AS medel_vantetid,
+
+  -- Vårdgarantiuppfyllelse
+  -- PvV exkluderas. MoV inkluderas (korrekt för genomförda per SKR).
+  COUNT(CASE WHEN g.vardgaranti='1' AND COALESCE(g.avvikelsekod,'')<>'1' THEN 1 END)
+    AS namnare_vg,
+  COUNT(CASE WHEN g.vardgaranti='1' AND COALESCE(g.avvikelsekod,'')<>'1' AND g.vantetid_dagar<=90 THEN 1 END)
+    AS taljare_vg,
+  CASE WHEN COUNT(CASE WHEN g.vardgaranti='1' AND COALESCE(g.avvikelsekod,'')<>'1' THEN 1 END) > 0
+    THEN CAST(COUNT(CASE WHEN g.vardgaranti='1' AND COALESCE(g.avvikelsekod,'')<>'1' AND g.vantetid_dagar<=90 THEN 1 END) AS DOUBLE)
+       / COUNT(CASE WHEN g.vardgaranti='1' AND COALESCE(g.avvikelsekod,'')<>'1' THEN 1 END)
+    ELSE NULL END AS andel_inom_90,
+
+  -- Fördelning per tidsintervall
+  COUNT(CASE WHEN g.vantetid_intervall='0-30' THEN 1 END)  AS n_0_30,
+  COUNT(CASE WHEN g.vantetid_intervall='31-60' THEN 1 END) AS n_31_60,
+  COUNT(CASE WHEN g.vantetid_intervall='61-90' THEN 1 END) AS n_61_90,
+  COUNT(CASE WHEN g.vantetid_intervall='91-120' THEN 1 END) AS n_91_120,
+  COUNT(CASE WHEN g.vantetid_intervall='121-180' THEN 1 END) AS n_121_180,
+  COUNT(CASE WHEN g.vantetid_intervall='>180' THEN 1 END) AS n_over_180,
+
+  -- Per kön (⚠️ ändra '1'/'2' till 'M'/'K' om er data har bokstäver)
+  COUNT(CASE WHEN g.kon='1' THEN 1 END) AS antal_man,
+  COUNT(CASE WHEN g.kon='2' THEN 1 END) AS antal_kvinna,
+  MEDIAN(CASE WHEN g.kon='1' THEN g.vantetid_dagar END) AS median_man,
+  MEDIAN(CASE WHEN g.kon='2' THEN g.vantetid_dagar END) AS median_kvinna,
+
+  -- Per åldersgrupp
+  COUNT(CASE WHEN g.aldersgrupp='<50' THEN 1 END) AS n_age_lt50,
+  COUNT(CASE WHEN g.aldersgrupp='50-64' THEN 1 END) AS n_age_50_64,
+  COUNT(CASE WHEN g.aldersgrupp='65-74' THEN 1 END) AS n_age_65_74,
+  COUNT(CASE WHEN g.aldersgrupp='75-84' THEN 1 END) AS n_age_75_84,
+  COUNT(CASE WHEN g.aldersgrupp='85+' THEN 1 END) AS n_age_85plus,
+
+  -- Patientresa
+  MEDIAN(g.total_patientresa_dagar) AS median_total_patientresa,
+  MEDIAN(g.remiss_till_beslut_dagar) AS median_remiss_till_beslut
+
+FROM calc_vantetid_genomford g
+GROUP BY g.op_ar, g.op_manad, g.hsaid_vardenhet, g.hsaid_region,
+         g.regionkod, g.sjukhuskod, g.sjukhusnamn;

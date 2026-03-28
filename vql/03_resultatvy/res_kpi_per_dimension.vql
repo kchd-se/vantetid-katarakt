@@ -1,0 +1,31 @@
+-- res_kpi_per_dimension.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- Per-dimension-vyer (oförändrade)
+
+CREATE OR REPLACE VIEW res_kpi_per_yrke AS
+SELECT op_ar, op_manad, yrkeskategori,
+  COUNT(*) AS antal, MEDIAN(vantetid_dagar) AS median_vt,
+  CAST(COUNT(CASE WHEN uppfyller_vg=1 THEN 1 END) AS DOUBLE)
+    / NULLIF(COUNT(CASE WHEN vardgaranti='1' AND COALESCE(avvikelsekod,'')<>'1' THEN 1 END),0) AS andel_90
+FROM calc_vantetid_genomford GROUP BY op_ar, op_manad, yrkeskategori;
+
+CREATE OR REPLACE VIEW res_kpi_per_kontaktform AS
+SELECT op_ar, op_manad, vardkontakttyp,
+  COUNT(*) AS antal, MEDIAN(vantetid_dagar) AS median_vt
+FROM calc_vantetid_genomford GROUP BY op_ar, op_manad, vardkontakttyp;
+
+CREATE OR REPLACE VIEW res_kpi_per_bokning AS
+SELECT op_ar, op_manad, bokningssatt,
+  COUNT(*) AS antal, MEDIAN(vantetid_dagar) AS median_vt
+FROM calc_vantetid_genomford GROUP BY op_ar, op_manad, bokningssatt;
+
+CREATE OR REPLACE VIEW res_kpi_per_remittent AS
+SELECT op_ar, op_manad, remittenttyp, remittent_hsaid,
+  COUNT(*) AS antal, MEDIAN(vantetid_dagar) AS median_vt
+FROM calc_vantetid_genomford GROUP BY op_ar, op_manad, remittenttyp, remittent_hsaid;
+
+CREATE OR REPLACE VIEW res_kpi_per_kommun AS
+SELECT op_ar, op_manad, lkf,
+  COUNT(*) AS antal, MEDIAN(vantetid_dagar) AS median_vt
+FROM calc_vantetid_genomford GROUP BY op_ar, op_manad, lkf;

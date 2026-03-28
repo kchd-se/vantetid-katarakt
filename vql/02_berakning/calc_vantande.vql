@@ -1,0 +1,45 @@
+-- calc_vantande.vql
+-- KCHD Katarakt väntetidspaket v1.0.1
+--
+-- MoV exkluderas korrekt vid bryter_vg (väntande).
+-- Källa: SKR dokumentation — "MoV kan exkluderas vid
+-- redovisning av väntande".
+
+CREATE OR REPLACE VIEW calc_vantande AS
+SELECT
+  src.*,
+
+  GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE))
+    AS vantetid_dagar,
+
+  LASTDAYOFMONTH(CURRENT_DATE) AS rapportdatum,
+
+  CASE
+    WHEN GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) <= 30  THEN '0-30'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) <= 60  THEN '31-60'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) <= 90  THEN '61-90'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) <= 120 THEN '91-120'
+    WHEN GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) <= 180 THEN '121-180'
+    ELSE '>180'
+  END AS vantetid_intervall,
+
+  -- MoV = ej aktivt väntande
+  CASE
+    WHEN COALESCE(src.avvikelsekod, '') = '2' THEN 'Ej aktivt väntande'  -- ⚠️ ändra till 'MoV' om textformat
+    ELSE 'Aktivt väntande'
+  END AS vantestatus,
+
+  -- VG-risk: bryter vårdgarantin?
+  -- Exkluderar BÅDE PvV ('1') och MoV ('2') — korrekt per SKR för väntande.
+  CASE
+    WHEN src.vardgaranti = '1'                                            -- ⚠️ ändra till 'JA' om textformat
+         AND COALESCE(src.avvikelsekod, '') NOT IN ('1', '2')             -- ⚠️ ändra till ('PvV','MoV') om textformat
+         AND GETDAYSBETWEEN(src.beslut_datum, LASTDAYOFMONTH(CURRENT_DATE)) > 90
+    THEN 1 ELSE 0
+  END AS bryter_vg
+
+FROM src_vantande src
+WHERE src.kva_kod IN (SELECT kva_kod FROM ref_kva_katarakt)
+  AND src.mvo_kod = '511'
+  AND src.beslut_datum IS NOT NULL
+  AND src.start_datum  IS NULL;

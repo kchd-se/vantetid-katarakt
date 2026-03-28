@@ -14,6 +14,12 @@ Regioner ändrar BARA filerna i `vql/01_basvy/`. Allt annat är identiskt för a
 
 Vi använder **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 
+### VIKTIGT: Ändra ALDRIG version på eget initiativ
+
+Använd exakt den version som anges i prompten. Om ingen version anges, fråga.
+Välj aldrig en annan version än den användaren angett — även om du tycker att
+en annan version vore mer logisk.
+
 ### När du ändrar kod, bestäm vilken typ av ändring:
 
 - **PATCH** (1.0.0 → 1.0.1): Buggfix, rättning av felaktig logik, stavfel i SQL.

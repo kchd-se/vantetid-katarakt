@@ -1,10 +1,27 @@
--- verif_jamforelse.vql
--- KCHD Katarakt väntetidspaket v1.0.0
+-- ============================================================
+-- KCHD Verifieringspaket v2.4
+-- Vy: verif_jamforelse
 --
--- Ändring i v1.0.0: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Ändring sedan v2.3: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Anledning: vantetider.se visar per sjukhus — man kan inte
+-- jämföra utan per-sjukhus-uppdelning.
+--
+-- Beroenden: calc_vantetid_genomford, calc_vantande
+--            (måste finnas i Denodo innan denna vy körs)
+--
+-- INSTRUKTION:
+--   SELECT * FROM verif_jamforelse ORDER BY sjukhus, kpi;
+--   Jämför varje rad mot vantetider.se.
+-- ============================================================
+
+-- ──────────────────────────────────────────────
+-- 04a: verif_jamforelse (ÄNDRAD i v2.4)
+--
+-- Ändring: sjukhusnamn tillagt i SELECT och GROUP BY.
 -- Anledning: vantetider.se visar per sjukhus — man kan
 -- inte jämföra utan att ha per-sjukhus-uppdelning.
 -- Tack till VGR som visade att detta behövdes.
+-- ──────────────────────────────────────────────
 
 CREATE OR REPLACE VIEW verif_jamforelse AS
 -- Andel inom 90 dagar (VG-andel)
@@ -121,3 +138,5 @@ SELECT op_manad, sjukhusnamn,
   'dagar',
   COUNT(CASE WHEN kon='2' THEN 1 END), NULL, '', ''
 FROM calc_vantetid_genomford GROUP BY op_manad, sjukhusnamn;
+
+

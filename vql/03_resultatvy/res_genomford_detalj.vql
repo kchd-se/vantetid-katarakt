@@ -1,7 +1,7 @@
 -- res_genomford_detalj.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
--- Ändring i v1.0.1: is_hemregion tillagt i kolumnlista.
+-- Ändring i v1.0.0: is_hemregion tillagt i kolumnlista.
 
 CREATE OR REPLACE VIEW res_genomford_detalj AS
 SELECT
@@ -15,6 +15,6 @@ SELECT
   medicinskt_maldatum, lkf, hsaid_listning, matperiod,
   vantetid_dagar, vantetid_intervall, uppfyller_vg,
   total_patientresa_dagar, remiss_till_beslut_dagar,
-  is_hemregion,                                          -- NYTT i v1.0.1
+  is_hemregion,                                          -- NYTT i v1.0.0
   op_ar, op_manad
 FROM calc_vantetid_genomford;

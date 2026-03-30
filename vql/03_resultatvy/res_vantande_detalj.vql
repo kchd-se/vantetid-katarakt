@@ -1,5 +1,5 @@
 -- res_vantande_detalj.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 
 CREATE OR REPLACE VIEW res_vantande_detalj AS
 SELECT

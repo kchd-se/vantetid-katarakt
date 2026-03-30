@@ -1,7 +1,7 @@
 -- calc_vantetid_genomford.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
--- Ändringar i v1.0.1 (baserat på VGR feedback):
+-- Ändringar i v1.0.0 (baserat på VGR feedback):
 --   1. NYTT: is_hemregion — flagga baserad på ref_filter_region.
 --      1 = patienten folkbokförd i regionen.
 --      0 = utomläning (opererad här men bor i annan region).
@@ -78,7 +78,7 @@ SELECT
     ELSE NULL
   END AS remiss_till_beslut_dagar,
 
-  -- Utomläningsflagga (NYTT i v1.0.1)
+  -- Utomläningsflagga (NYTT i v1.0.0)
   -- 1 = patienten folkbokförd i regionen (LKF-prefix matchar ref_filter_region)
   -- 0 = utomläning (opererad här men bor i annan region)
   -- Denna kolumn FILTRERAR INTE bort något — alla rader behålls.

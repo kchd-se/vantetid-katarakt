@@ -1,7 +1,7 @@
 -- res_kpi_manad.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
--- Ändring i v1.0.1: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Ändring i v1.0.0: sjukhusnamn tillagt i SELECT och GROUP BY.
 -- Anledning: VGR visade att verifiering mot vantetider.se
 -- kräver per-sjukhus-uppdelning. sjukhusnamn är 1:1 med
 -- sjukhuskod — ändrar inte antal grupper.
@@ -13,7 +13,7 @@ CREATE OR REPLACE VIEW res_kpi_manad AS
 SELECT
   g.op_ar AS ar, g.op_manad AS manad,
   g.hsaid_vardenhet, g.hsaid_region, g.regionkod,
-  g.sjukhuskod, g.sjukhusnamn,                  -- sjukhusnamn tillagt i v1.0.1
+  g.sjukhuskod, g.sjukhusnamn,                  -- sjukhusnamn tillagt i v1.0.0
 
   COUNT(*) AS antal_genomforda,
 

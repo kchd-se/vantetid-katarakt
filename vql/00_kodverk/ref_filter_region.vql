@@ -1,5 +1,5 @@
 -- ref_filter_region.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
 -- ⚠️ ÄNDRA DETTA PER REGION
 -- Definierar vilka länskoder (de 2 första siffrorna i LKF)

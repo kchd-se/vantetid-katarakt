@@ -1,5 +1,5 @@
 -- calc_vantande.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
 -- MoV exkluderas korrekt vid bryter_vg (väntande).
 -- Källa: SKR dokumentation — "MoV kan exkluderas vid

@@ -1,5 +1,5 @@
 -- src_genomford.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
 -- Kommentar om kodformat:
 --   vardgaranti: XSD säger 1=JA, 2=NEJ (heltal).

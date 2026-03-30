@@ -1,5 +1,5 @@
 -- src_vantande.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 
 CREATE OR REPLACE VIEW src_vantande AS
 SELECT

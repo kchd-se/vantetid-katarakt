@@ -1,7 +1,7 @@
 -- dq_rapport_data.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
--- Ändring i v1.0.1: DQ6-raderna inkluderar nu sjukhusnamn
+-- Ändring i v1.0.0: DQ6-raderna inkluderar nu sjukhusnamn
 -- via CONCAT så att varje sjukhus syns separat.
 -- Anledning: VGR visade att per-sjukhus DQ6 behövs
 -- för att se vilka sjukhus som avviker.
@@ -142,7 +142,7 @@ SELECT 'DQ4', 'ifyllnad_vantande', 'remiss_datum',
 FROM src_vantande
 
 UNION ALL
--- DQ6: Rimlighet (ÄNDRAD i v1.0.1 — nu per sjukhus)
+-- DQ6: Rimlighet (ÄNDRAD i v1.0.0 — nu per sjukhus)
 SELECT 'DQ6', 'rimlighet',
   CONCAT('andel_inom_90 (', sjukhusnamn, ')'),
   CAST(CAST(andel_inom_90 * 100 AS DECIMAL(5,1)) AS VARCHAR),

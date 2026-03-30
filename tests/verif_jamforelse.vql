@@ -1,7 +1,7 @@
 -- verif_jamforelse.vql
--- KCHD Katarakt väntetidspaket v1.0.1
+-- KCHD Katarakt väntetidspaket v1.0.0
 --
--- Ändring i v1.0.1: sjukhusnamn tillagt i SELECT och GROUP BY.
+-- Ändring i v1.0.0: sjukhusnamn tillagt i SELECT och GROUP BY.
 -- Anledning: vantetider.se visar per sjukhus — man kan
 -- inte jämföra utan att ha per-sjukhus-uppdelning.
 -- Tack till VGR som visade att detta behövdes.

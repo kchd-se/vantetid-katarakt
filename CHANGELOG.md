@@ -4,6 +4,18 @@ Alla väsentliga ändringar i detta projekt dokumenteras i denna fil.
 Formatet baseras på [Keep a Changelog](https://keepachangelog.com/sv/1.0.0/)
 och projektet följer [Semantic Versioning](https://semver.org/lang/sv/).
 
+## [1.1.0] — 2026-03-30
+
+### Ändrat
+- Ersatt uppdelad VQL-struktur (en fil per vy) med kompletta paketfiler från POC_KCHD v2.4
+- katarakt_vantetid_v2.4.vql i vql/02_berakning/ — all beräkningslogik samlad i en fil
+- verifieringspaket.vql i vql/04_verifiering/ — verif_jamforelse för jämförelse mot vantetider.se
+- Per-dimension-vyer utökade med samtliga KPI-kolumner (andel, median, medel, patientresa, remiss→beslut)
+
+### Borttaget
+- Gamla enskilda VQL-filer i 00_kodverk/, 01_basvy/, 03_resultatvy/, 04_kvalitet/
+- dq_rapport_data.vql (ingår ej i denna leverans)
+
 ## [1.0.0] — 2026-03-30
 
 ### Tillagt

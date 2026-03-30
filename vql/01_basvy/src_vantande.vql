@@ -1,59 +1,44 @@
 -- ============================================================
 -- src_vantande.vql — INTERFACE-VY (väntande patienter)
 -- KCHD Katarakt väntetidspaket v1.0.0
+-- Region: VGR (Västra Götalandsregionen)
 -- ============================================================
--- INSTRUKTION: Ändra kolumnnamnen till vänster så de matchar
--- er datakälla. Aliasnamnen (efter AS) får INTE ändras.
--- Samma princip som src_genomford — se den för detaljer.
+-- Kolumnnamnen till vänster mappar VGR:s datakälla.
+-- Aliasnamnen (efter AS) är kontrakt mot beräkningslagret.
 -- ============================================================
 
 CREATE OR REPLACE VIEW src_vantande AS
 SELECT
-  -- ── Patientidentifiering ──────────────────────
-  ert_kontakt_id_kolumnnamn       AS vardkontakt_id,
-  ert_patient_id_kolumnnamn       AS patient_id,
-  ert_kon_kolumnnamn              AS kon,
-  ert_fodelsear_kolumnnamn        AS fodelsear,
-
-  -- ── Organisation ──────────────────────────────
-  'XX'                            AS regionkod,         -- ⚠️ ändra till er regionkod
-  ert_hsaid_region_kolumnnamn     AS hsaid_region,
-  ert_hsaid_vardgivare_kolumnnamn AS hsaid_vardgivare,
-  ert_hsaid_vardenhet_kolumnnamn  AS hsaid_vardenhet,
-  ert_hsaid_enhet_kolumnnamn      AS hsaid_enhet,
-  ert_sjukhuskod_kolumnnamn       AS sjukhuskod,
-  ert_sjukhusnamn_kolumnnamn      AS sjukhusnamn,
-
-  -- ── Aktivitet ─────────────────────────────────
-  ert_mvo_kolumnnamn              AS mvo_kod,
-  '51101'                         AS aktivitetskod,
-  ert_aktivitet_kva_kolumnnamn    AS aktivitet_kva,
-  ert_aktivitet_icd_kolumnnamn    AS aktivitet_icd,
-  ert_kva_kolumnnamn              AS kva_kod,
-
-  -- ── Kontaktinformation ────────────────────────
-  ert_yrkeskategori_kolumnnamn    AS yrkeskategori,
-  ert_bokningssatt_kolumnnamn     AS bokningssatt,
-  ert_kontakttyp_kolumnnamn       AS vardkontakttyp,
-  ert_vardgaranti_kolumnnamn      AS vardgaranti,
-  ert_avvikelsekod_kolumnnamn     AS avvikelsekod,
-
-  -- ── Remiss ────────────────────────────────────
-  ert_remittenttyp_kolumnnamn     AS remittenttyp,
-  ert_remittent_hsaid_kolumnnamn  AS remittent_hsaid,
-  ert_remiss_id_kolumnnamn        AS remiss_id,
-  ert_remiss_datum_kolumnnamn     AS remiss_datum,
-  ert_ankomst_datum_kolumnnamn    AS ankomst_datum,
-
-  -- ── Datum ─────────────────────────────────────
-  ert_beslut_datum_kolumnnamn     AS beslut_datum,
-  NULL                            AS start_datum,       -- Alltid NULL för väntande
-  ert_med_maldatum_kolumnnamn     AS medicinskt_maldatum,
-
-  -- ── Geografi och övrigt ───────────────────────
-  ert_kommun_kod_kolumnnamn       AS lkf,
-  ert_hsaid_listning_kolumnnamn   AS hsaid_listning,
-  ert_period_kolumnnamn           AS matperiod
-
--- ⚠️ ÄNDRA TABELLNAMNET NEDAN till er faktiska datakälla
-FROM ert_schema.er_tabell_vantande;
+  kontakt_id          AS vardkontakt_id,
+  pat_id              AS patient_id,
+  kon_kod             AS kon,
+  fodelsar            AS fodelsear,
+  '51'                AS regionkod,
+  hsa_region          AS hsaid_region,
+  hsa_vardgivare      AS hsaid_vardgivare,
+  hsa_vardenhet       AS hsaid_vardenhet,
+  hsa_enhet           AS hsaid_enhet,
+  sjukhus_kod         AS sjukhuskod,
+  sjukhus_namn        AS sjukhusnamn,
+  mvo                 AS mvo_kod,
+  '51101'             AS aktivitetskod,
+  kva_aktivitet       AS aktivitet_kva,
+  icd_aktivitet       AS aktivitet_icd,
+  kva                 AS kva_kod,
+  yrke                AS yrkeskategori,
+  bokning             AS bokningssatt,
+  kontakttyp          AS vardkontakttyp,
+  vg_flagga           AS vardgaranti,
+  avvikelse           AS avvikelsekod,
+  remtyp              AS remittenttyp,
+  rem_hsaid           AS remittent_hsaid,
+  remiss_id           AS remiss_id,
+  rem_datum           AS remiss_datum,
+  rem_ankomst         AS ankomst_datum,
+  beslut_datum        AS beslut_datum,
+  NULL                AS start_datum,       -- Alltid NULL för väntande
+  med_maldatum        AS medicinskt_maldatum,
+  kommun_kod          AS lkf,
+  hsa_listning        AS hsaid_listning,
+  period              AS matperiod
+FROM ds_datalager.v_vantande_specialiserad;

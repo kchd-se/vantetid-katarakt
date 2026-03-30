@@ -40,6 +40,19 @@ tests/                 Testfiler för verifiering av beräkningslogik
 Projektet följer [Semantic Versioning](https://semver.org/lang/sv/).
 Se `CHANGELOG.md` för detaljer om ändringar mellan versioner.
 
+## Datakvalitetsrapport
+
+I `docs/dq_rapport.html` finns en interaktiv HTML-rapport som visualiserar
+resultaten från datakvalitetskontrollerna i `vql/04_kvalitet/`.
+
+Rapporten visar bland annat:
+
+- Övergripande sammanfattning av antal godkända och underkända kontroller
+- Detaljerad vy per kontroll med antal berörda rader och felbeskrivning
+- Trenddiagram över datakvalitet över tid
+
+Öppna filen direkt i en webbläsare — inga beroenden krävs.
+
 ## Regionspårning
 
 När er region driftsätter eller uppgraderar, uppdatera `manifest.json` → `regions`-objektet.
